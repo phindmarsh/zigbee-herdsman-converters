@@ -2093,7 +2093,7 @@ const converters = {
     danfoss_day_of_week: {
         key: ['day_of_week'],
         convertSet: async (entity, key, value, meta) => {
-            const payload = {'danfossDayOfWeek': (Math.abs(value) < 7 ? Math.abs(value) : 7)};
+            const payload = {'danfossDayOfWeek': utils.getKey(constants.dayOfWeek, value, undefined, Number)};
             await entity.write('hvacThermostat', payload, manufacturerOptions.danfoss);
             return {readAfterWriteTime: 200, state: {'day_of_week': value}};
         },
@@ -4590,7 +4590,7 @@ const converters = {
     ts0216_volume: {
         key: ['volume'],
         convertSet: async (entity, key, value, meta) => {
-            await entity.write('ssIasWd', {0x0002: {value: value, type: 0x20}});
+            await entity.write('ssIasWd', {0x0002: {value: utils.mapNumberRange(value, 0, 100, 100, 10), type: 0x20}});
         },
         convertGet: async (entity, key, meta) => {
             await entity.read('ssIasWd', [0x0002]);
@@ -4849,6 +4849,18 @@ const converters = {
             await entity.read('closuresDoorLock', [0x4001], {manufacturerCode: 4919});
         },
     },
+    idlock_service_mode: {
+        key: ['service_mode'],
+        convertSet: async (entity, key, value, meta) => {
+            const lookup = {'deactivated': 0, 'random_pin_1x_use': 5, 'random_pin_24_hours': 6};
+            await entity.write('closuresDoorLock', {0x4003: {value: lookup[value], type: 0x20}},
+                {manufacturerCode: 4919});
+            return {state: {service_mode: value}};
+        },
+        convertGet: async (entity, key, meta) => {
+            await entity.read('closuresDoorLock', [0x4003], {manufacturerCode: 4919});
+        },
+    },
     idlock_lock_mode: {
         key: ['lock_mode'],
         convertSet: async (entity, key, value, meta) => {
@@ -5060,6 +5072,45 @@ const converters = {
             } else {
                 throw new Error(`Not supported: '${key}'`);
             }
+        },
+    },
+    wiser_vact_calibrate_valve: {
+        key: ['calibrate_valve'],
+        convertSet: async (entity, key, value, meta) => {
+            await entity.command('hvacThermostat', 'wiserSmartCalibrateValve', {},
+                {srcEndpoint: 11, disableDefaultResponse: true, sendWhenActive: true});
+            return {state: {'calibrate_valve': value}};
+        },
+    },
+    wiser_sed_zone_mode: {
+        key: ['zone_mode'],
+        convertSet: async (entity, key, value, meta) => {
+            return {state: {'zone_mode': value}};
+        },
+    },
+    wiser_sed_occupied_heating_setpoint: {
+        key: ['occupied_heating_setpoint'],
+        convertSet: async (entity, key, value, meta) => {
+            const occupiedHeatingSetpoint = (Math.round((value * 2).toFixed(1)) / 2).toFixed(1) * 100;
+            entity.saveClusterAttributeKeyValue('hvacThermostat', {occupiedHeatingSetpoint});
+            return {state: {'occupied_heating_setpoint': value}};
+        },
+    },
+    wiser_sed_thermostat_local_temperature_calibration: {
+        key: ['local_temperature_calibration'],
+        convertSet: (entity, key, value, meta) => {
+            entity.write('hvacThermostat', {localTemperatureCalibration: Math.round(value * 10)},
+                {srcEndpoint: 11, disableDefaultResponse: true, sendWhenActive: true});
+            return {state: {local_temperature_calibration: value}};
+        },
+    },
+    wiser_sed_thermostat_keypad_lockout: {
+        key: ['keypad_lockout'],
+        convertSet: async (entity, key, value, meta) => {
+            const keypadLockout = utils.getKey(constants.keypadLockoutMode, value, value, Number);
+            await entity.write('hvacUserInterfaceCfg', {keypadLockout},
+                {srcEndpoint: 11, disableDefaultResponse: true, sendWhenActive: true});
+            return {state: {keypad_lockout: value}};
         },
     },
 

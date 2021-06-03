@@ -158,10 +158,10 @@ module.exports = [
         onEvent: bulbOnEvent,
     },
     {
-        zigbeeModel: ['TRADFRI bulb E27 CWS 806lm'],
+        zigbeeModel: ['TRADFRI bulb E26 CWS 800lm', 'TRADFRI bulb E27 CWS 806lm'],
         model: 'LED1924G9',
         vendor: 'IKEA',
-        description: 'TRADFRI bulb E27 CWS 806 lumen, dimmable, color, opal white',
+        description: 'TRADFRI bulb E26/E27 CWS 800/806 lumen, dimmable, color, opal white',
         extend: tradfriExtend.light_onoff_brightness_colortemp_color(),
     },
     {
@@ -280,7 +280,7 @@ module.exports = [
     },
     {
         zigbeeModel: ['TRADFRI control outlet'],
-        model: 'E1603/E1702',
+        model: 'E1603/E1702/E1708',
         description: 'TRADFRI control outlet',
         vendor: 'IKEA',
         extend: extend.switch(),
@@ -556,5 +556,12 @@ module.exports = [
         vendor: 'IKEA',
         description: 'TRADFRI LED bulb E14 470 lumen, opal, dimmable, white spectrum, color spectrum',
         extend: tradfriExtend.light_onoff_brightness_colortemp_color(),
+    },
+    {
+        zigbeeModel: ['TRADFRIbulbE14WWclear250lm'],
+        model: 'LED1935C3',
+        vendor: 'IKEA',
+        description: 'TRADFRI LED bulb E14 WW clear 250 lumen, dimmable',
+        extend: tradfriExtend.light_onoff_brightness(),
     },
 ];
